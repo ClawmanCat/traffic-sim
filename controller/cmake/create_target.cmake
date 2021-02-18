@@ -28,8 +28,6 @@ macro(create_target target_name target_type major minor patch)
 
     # Add tests if there is a test folder for this target and testing is enabled.
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests" AND DEFINED ENABLE_TESTING)
-        set(STOP_UNUSED_VAR_WARNING ${ENABLE_TESTING})
-
         include(CTest)
         enable_testing()
 
@@ -46,9 +44,8 @@ macro(create_target target_name target_type major minor patch)
             target_include_directories("test_${test_name}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
             set_target_properties("test_${test_name}" PROPERTIES LINKER_LANGUAGE CXX)
 
-            # Make the test have the target as a dependency.
-            target_link_libraries("test_${test_name}" PUBLIC ${target_name})
-            target_compile_definitions("test_${test_name}" PUBLIC ${name_capitalized}_TESTING)
+            # Add dependencies.
+            target_link_libraries("test_${test_name}" ${ARGN})
         endforeach()
     endif()
 endmacro()

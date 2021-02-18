@@ -7,4 +7,6 @@ create_target(
     # Dependencies:
     PUBLIC CONAN_PKG::boost
     PUBLIC CONAN_PKG::ixwebsocket
+    PUBLIC CONAN_PKG::range-v3
+    PUBLIC CONAN_PKG::magic_enum
 )
