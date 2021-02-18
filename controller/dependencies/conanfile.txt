@@ -1,0 +1,17 @@
+[generators]
+cmake
+
+[requires]
+boost/1.75.0
+ixwebsocket/11.0.4
+
+[options]
+boost:header_only=True
+
+[imports]
+bin, *.dll -> ./bin
+lib, *.dll -> ./bin
+bin, *.dylib -> ./bin
+lib, *.dylib -> ./bin
+bin, *.so -> ./bin
+lib, *.so -> ./lib
