@@ -29,6 +29,15 @@ namespace ts {
     };
     
     
+    route_state::light_state& operator++(route_state::light_state& s) {
+        s = (s == route_state::light_state::RED_SAFE)
+            ? route_state::light_state::GREEN
+            : (route_state::light_state) (((int) s) + 1);
+            
+        return s;
+    }
+    
+    
     class simulation_state {
     public:
         [[nodiscard]] static simulation_state& instance(void) {

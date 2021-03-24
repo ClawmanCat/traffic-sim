@@ -21,10 +21,8 @@ namespace ts {
             while (true) {
                 last_update = steady_clock::now();
                 
-                auto changed_states = strategy->update();
-                for (auto&& state : changed_states) {
-                    simulation_state::instance().update(std::move(state));
-                }
+                auto changes = strategy->update();
+                for (auto&& change : changes) simulation_state::instance().update(std::move(change));
     
                 connection::instance().transmit_changes();
                 std::this_thread::sleep_until(last_update + interval);

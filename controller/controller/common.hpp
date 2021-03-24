@@ -41,14 +41,4 @@ namespace ts {
     inline milliseconds time_since(steady_clock::time_point time) {
         return duration_cast<milliseconds>(steady_clock::now() - time);
     }
-    
-    
-    #define overload_enum_unary(name, action)                                       \
-    template <typename E> requires std::is_enum_v<E>                                \
-    constexpr inline E operator name (const E& e) {                                 \
-        return (E) [](auto e) { return action; } ((std::underlying_type_t<E>) e);   \
-    }
-    
-    overload_enum_unary(++, e++);
-    overload_enum_unary(--, e--);
 }
