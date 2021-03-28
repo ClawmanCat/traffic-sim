@@ -5,8 +5,9 @@ import websockets
 
 
 async def hello():
-    uri = "ws://localhost:8768"
+    uri = "ws://localhost:6969"
     async with websockets.connect(uri) as websocket:
+        print("connected!")
         name = input("What's your name?")
 
         await websocket.send(name)
