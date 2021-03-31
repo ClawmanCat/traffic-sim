@@ -6,7 +6,7 @@ import json
 
 
 async def hello():
-    uri = "ws://localhost:6968"
+    uri = "ws://localhost:6964"
     async with websockets.connect(uri) as websocket:
         print("connected!")
         x = await websocket.recv()
@@ -27,7 +27,6 @@ async def hello():
             ]
         }
         name = json.dumps(jn)
-
         await websocket.send(name)
         print(f"> {name}")
 

@@ -1,58 +1,75 @@
-import pygame
-# WS server example
-
 import asyncio
-import websockets
-from TrafficInfo import TrafficInfo
 import json
-import time
+import logging
+import websockets
 
-dump_array = {
-    "msg_type": "notify_state_change",
-    "msg_id": 1, "data":
-        [
-            {"id": 1, "crosses": [5, 3], "clearing_time": 9},
-            {"id": 2, "crosses": [2, 4], "clearing_time": 9}
-        ]
-}
-PORT = 6968
+logging.basicConfig()
+web_dump = {
+            "msg_type": "state_change",
+            "msg_id": 0,
+            "data": [
+                {
+                    "id": 1,
+                    "crosses": [1, 2],
+                    "clearing_time": 3
+                },
+                {
+                    "id": 2,
+                    "crosses": [3, 6],
+                    "clearing_time": 6
+                }
+
+            ]
+        }
+STATE = {"value": 0}
+
+USERS = set()
 
 
-async def send_state_message(ws, send_all: bool):
-    await ws.send(json.dumps(dump_array))
+def state_event():
+    return json.dumps(
+        {
+            "msg_type": "state_change",
+            "msg_id": 0,
+            "data": [
+                {
+                    "id": 1,
+                    "crosses": [4, 5],
+                    "clearing_time": 6
+                },
+                {
+                    "id": 2,
+                    "crosses": [1, 3],
+                    "clearing_time": 8
+                }
+
+            ]
+        }
+    )
 
 
-def change_light_states(json):
-    print(f'Received: {json}')
+async def register(websocket):
+    await websocket.send(json.dumps(web_dump))
+    USERS.add(websocket)
 
 
-async def server_fn(ws, path):
-    async def send_updates():
-        nonlocal ws
+async def unregister(websocket):
+    USERS.remove(websocket)
 
-        try:
-            first = True
-            while True:
-                time.sleep(1)
-                await send_state_message(ws, first)
-                first = False
-        except Exception as e:
-            print(f'Connection errored: {e}')
 
-    future = asyncio.create_task(send_updates())
-
+async def counter(websocket, path):
+    # register(websocket) sends user_event() to websocket
+    await register(websocket)
     try:
-        while True:
-            update = await ws.recv()
-            change_light_states(update)
-    except Exception as e:
-        print(f'Connection errored: {e}')
+        await websocket.send(state_event())
+        async for message in websocket:
+            data = json.loads(message)
+            print(data)
+    finally:
+        await unregister(websocket)
 
-    await future
 
-
-print("Starting...")
-start_server = websockets.serve(server_fn, "localhost", 6968)
+start_server = websockets.serve(counter, "localhost", 6969)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
