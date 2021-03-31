@@ -24,7 +24,7 @@ async def server(websocket, path):
         await websocket.send(json.dumps(traffics))
 
 
-start_server = websockets.serve(server, "localhost", 6968)
+start_server = websockets.serve(server, "localhost", 6969)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

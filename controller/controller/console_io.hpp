@@ -35,7 +35,7 @@ namespace ts {
             std::lock_guard lock { mtx };
             
             ([&](auto elem) { std::cout << elem; }(args), ...);
-            std::cout << "\n";
+            std::cout << std::endl; // Always flush for easier debugging.
         }
         
         

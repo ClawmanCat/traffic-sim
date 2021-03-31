@@ -13,7 +13,7 @@ namespace ts {
     // Assuming that 'str' is a valid message of type 'notify_state_change',
     // decodes the message into the route objects encoded within it.
     inline std::vector<route_state> from_json(std::string_view str) {
-        json message { str };
+        json message = json::parse(str);
         
         auto value_or = [] <typename T>(const json& j, std::string_view key, T default_value) {
             auto it = j.find(key);
@@ -44,7 +44,7 @@ namespace ts {
         json message;
         message["msg_type"] = "perform_state_change";
         message["msg_id"]   = counter++;
-        message["data"]     = { };
+        message["data"]     = std::vector<json>{};
         
         for (const auto& route : routes | views::indirect) {
             message["data"] += {

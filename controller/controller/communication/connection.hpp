@@ -24,15 +24,25 @@ namespace ts {
             auto& state = simulation_state::instance();
             std::scoped_lock lock { mtx, state.mtx };
             
-            if (!connected) return;
+            if (!connected || state.changes.empty()) return;
             
             ws.send(to_json(state.changes));
             state.changes.clear();
+        }
+        
+        
+        void await_init_message(void) {
+            while (true) {
+                std::lock_guard lock { mtx };
+                if (received_init_message) return;
+                std::this_thread::sleep_for(100ms);
+            }
         }
     private:
         std::mutex mtx;
         ix::WebSocket ws;
         bool connected = false;
+        bool received_init_message = false;
         
         
         connection(void) {
@@ -69,6 +79,7 @@ namespace ts {
             auto& state = simulation_state::instance();
             std::scoped_lock lock { state.mtx };
             
+            unsigned updated = 0;
             for (auto& route : new_states) {
                 auto& old = state.routes[route.id];
                 
@@ -78,8 +89,13 @@ namespace ts {
                     std::swap(route.coming,        old.coming);
                     std::swap(route.waiting,       old.waiting);
                     std::swap(route.emergency,     old.emergency);
+                    
+                    ++updated;
                 }
             }
+            
+            received_init_message = true;
+            console_io::out("Updated ", updated, " crossings from simulation.");
         }
     };
 }

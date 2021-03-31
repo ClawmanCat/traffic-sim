@@ -12,7 +12,7 @@ namespace ts {
         std::vector<route_id> crosses;
         milliseconds clearing_time;
         std::optional<bool> waiting, coming, emergency;
-        int most_recent_msg = 0;
+        int most_recent_msg = min_value<int>;
         
         
         [[nodiscard]] constexpr auto operator<=>(const route_state& o) const {
