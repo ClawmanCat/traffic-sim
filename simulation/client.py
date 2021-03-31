@@ -10,18 +10,16 @@ async def hello():
     async with websockets.connect(uri) as websocket:
         print("connected!")
         jn = {
-            "msg_type": "state_change",
+            "msg_type": "perform_state_change",
             "msg_id": 0,
             "data": [
                 {
                     "id": 1,
-                    "crosses": [1, 2],
-                    "clearing_time": 3
+                    "state": 'green'
                 },
                 {
                     "id": 2,
-                    "crosses": [3, 6],
-                    "clearing_time": 6
+                    'state': 'green'
                 }
 
             ]

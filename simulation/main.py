@@ -18,7 +18,7 @@ async def server(websocket, path):
         }
         crosses = []
         for data in traffic_data:
-            traffic = TrafficInfo(data['id'], data['crosses'], data['clearing_time'])
+            traffic = TrafficInfo(data['id'], data['state'],)
             crosses.append(traffic.get_croses())
         traffics['data'] = crosses
         await websocket.send(json.dumps(traffics))

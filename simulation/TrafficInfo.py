@@ -1,14 +1,13 @@
 class TrafficInfo:
 
-    def __init__(self, msg_id, crosses, clearing_time):
+    def __init__(self, msg_id, state):
         self.msg_id = msg_id
-        self.crosses = crosses
-        self.clearing_time = clearing_time
+        self.state = state
 
     def get_croses(self):
         dicts = {
             "id": self.msg_id,
-            "crosses": self.crosses,
-            "clearing_time": self.clearing_time + 1
+            "crosses": [1, 4],
+            "clearing_time": 7
         }
         return dicts
