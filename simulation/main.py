@@ -23,15 +23,7 @@ async def send_state_message(ws, send_all: bool):
 
 
 def change_light_states(json):
-    x = {
-        "msg_type": "state_change",
-        "msg_id": 1, "data":
-            [
-                {"id": 1, "crosses": [1, 4], "clearing_time": 7},
-                {"id": 2, "crosses": [1, 4], "clearing_time": 7}
-            ]
-    }
-    return x
+    print(f'Received: {json}')
 
 
 async def server_fn(ws, path):
@@ -59,6 +51,7 @@ async def server_fn(ws, path):
     await future
 
 
+print("Starting...")
 start_server = websockets.serve(server_fn, "localhost", 6968)
 
 asyncio.get_event_loop().run_until_complete(start_server)

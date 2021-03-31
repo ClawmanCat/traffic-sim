@@ -62,12 +62,20 @@ namespace ts {
         void update(route_state&& value) {
             std::lock_guard lock { mtx };
             
-            auto it = routes.find(value.id);
+            auto id = value.id;
+            auto [it, inserted] = routes.insert_or_assign(id, std::move(value));
+            auto& route = it->second;
             
-            if (it == routes.end()) routes[value.id] = std::move(value);
-            else if (it->second != value) {
-                it->second = std::move(value);
-                changes.push_back(&(it->second));
+            auto changed_it = std::find_if(
+                changes.begin(),
+                changes.end(),
+                [&](const auto* rs) { return rs->id == id; }
+            );
+            
+            if (changed_it == changes.end()) {
+                changes.push_back(&route);
+            } else {
+                (*changed_it) = &route;
             }
         }
         
