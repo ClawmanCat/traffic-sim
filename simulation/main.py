@@ -3,14 +3,28 @@ import pygame
 
 import asyncio
 import websockets
+from TrafficInfo import TrafficInfo
+import json
 
 
 async def server(websocket, path):
     async for message in websocket:
-        await websocket.send(f"got message: {message}")
+        traffic_json = json.loads(message)
+        traffic_data = traffic_json['data']
+        traffics = {
+            "msg_type": "state_change",
+            "msg_id": 1,
+            "data": []
+        }
+        crosses = []
+        for data in traffic_data:
+            traffic = TrafficInfo(data['id'], data['crosses'], data['clearing_time'])
+            crosses.append(traffic.get_croses())
+        traffics['data'] = crosses
+        await websocket.send(json.dumps(traffics))
 
 
-start_server = websockets.serve(server, "localhost", 6969)
+start_server = websockets.serve(server, "localhost", 6968)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
