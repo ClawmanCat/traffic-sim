@@ -9,4 +9,5 @@ create_target(
     PUBLIC CONAN_PKG::ixwebsocket
     PUBLIC CONAN_PKG::range-v3
     PUBLIC CONAN_PKG::magic_enum
+    PUBLIC CONAN_PKG::nlohmann_json
 )

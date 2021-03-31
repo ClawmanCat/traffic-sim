@@ -2,9 +2,9 @@
 
 #include <controller/common.hpp>
 #include <controller/communication/state.hpp>
+#include <controller/communication/json.hpp>
 #include <controller/console_io.hpp>
 
-#include <boost/json.hpp>
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXNetSystem.h>
 
@@ -21,19 +21,13 @@ namespace ts {
         
         
         void transmit_changes(void) {
-            ws.send("Hello this is controller");
-            
-            /*auto& state = simulation_state::instance();
+            auto& state = simulation_state::instance();
             std::scoped_lock lock { mtx, state.mtx };
             
             if (!connected) return;
             
-            unsigned count = 0;
-            for (auto& change : state.changes | views::indirect) {
-                ws.send("Change light "s + std::to_string(count++));
-            }
-            
-            state.changes.clear();*/
+            ws.send(to_json(state.changes));
+            state.changes.clear();
         }
     private:
         std::mutex mtx;
@@ -46,7 +40,7 @@ namespace ts {
             
             ix::initNetSystem();
             
-            auto url = console_io::in<std::string>("Please enter a URL to connect to", "wss://127.0.0.1:80");
+            auto url = console_io::in<std::string>("Please enter a URL to connect to", "ws://127.0.0.1:6969");
             ws.setUrl(url);
             
             console_io::out("Connecting to ", url, "...");
@@ -55,7 +49,7 @@ namespace ts {
                 if (msg->type == ix::WebSocketMessageType::Open) {
                     console_io::out("Connection established.");
                     
-                    std::lock_guard lock { mtx };
+                    std::scoped_lock lock { mtx };
                     connected = true;
                 } else if (msg->type == ix::WebSocketMessageType::Close) {
                     // Program will exit before this function returns, no further actions necessary.
@@ -70,7 +64,22 @@ namespace ts {
     
     
         void on_msg_received(std::string_view msg) {
-            console_io::out("Received message: ", msg);
+            auto new_states = from_json(msg);
+    
+            auto& state = simulation_state::instance();
+            std::scoped_lock lock { state.mtx };
+            
+            for (auto& route : new_states) {
+                auto& old = state.routes[route.id];
+                
+                if (route.most_recent_msg > old.most_recent_msg) {
+                    std::swap(route.crosses,       old.crosses);
+                    std::swap(route.clearing_time, old.clearing_time);
+                    std::swap(route.coming,        old.coming);
+                    std::swap(route.waiting,       old.waiting);
+                    std::swap(route.emergency,     old.emergency);
+                }
+            }
         }
     };
 }

@@ -49,7 +49,12 @@ namespace ts {
             
             
             console_io::out("Please pick a strategy:\n" + strategy_string);
-            unsigned strategy_type = console_io::in<unsigned>("Choice", 0);
+            
+            unsigned strategy_type = max_value<unsigned>;
+            while (strategy_type >= strategies.size()) {
+                strategy_type = console_io::in<unsigned>("Choice", 0);
+            }
+            
             strategy = strategies[strategy_type].second();
             
             
