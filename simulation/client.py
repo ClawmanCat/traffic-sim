@@ -9,6 +9,8 @@ async def hello():
     uri = "ws://localhost:6968"
     async with websockets.connect(uri) as websocket:
         print("connected!")
+        x = await websocket.recv()
+        print(f"< {x}")
         jn = {
             "msg_type": "perform_state_change",
             "msg_id": 0,
