@@ -4,6 +4,7 @@
 #include <controller/console_io.hpp>
 #include <controller/traffic_manager/strategy/strategy.hpp>
 #include <controller/traffic_manager/strategy/round_robin.hpp>
+#include <controller/traffic_manager/strategy/test_strategy.hpp>
 #include <controller/communication/state.hpp>
 #include <controller/communication/connection.hpp>
 
@@ -18,10 +19,16 @@ namespace ts {
         
         
         [[noreturn]] void main(void) {
+            // Wait for the simulation to initialize the state.
+            connection::instance().await_init_message();
+            auto strategy = strategy_fn();
+            
             while (true) {
                 last_update = steady_clock::now();
                 
                 auto changes = strategy->update();
+                if (!changes.empty()) console_io::out("Changed ", changes.size(), " lights.");
+                
                 for (auto&& change : changes) simulation_state::instance().update(std::move(change));
     
                 connection::instance().transmit_changes();
@@ -34,7 +41,8 @@ namespace ts {
         
         traffic_manager(void) {
             std::vector<std::pair<std::string, producer_t>> strategies {
-                { "Round Robin", []() { return (strategy_t) std::make_unique<strategy_round_robin>(); } }
+                { "Round Robin", []() { return (strategy_t) std::make_unique<strategy_round_robin>(); } },
+                { "Testing",     []() { return (strategy_t) std::make_unique<strategy_test>(); } }
             };
             
             
@@ -49,8 +57,13 @@ namespace ts {
             
             
             console_io::out("Please pick a strategy:\n" + strategy_string);
-            unsigned strategy_type = console_io::in<unsigned>("Choice", 0);
-            strategy = strategies[strategy_type].second();
+            
+            unsigned strategy_type = max_value<unsigned>;
+            while (strategy_type >= strategies.size()) {
+                strategy_type = console_io::in<unsigned>("Choice", 0);
+            }
+            
+            strategy_fn = strategies[strategy_type].second;
             
             
             unsigned ms = console_io::in<unsigned>("Please pick an update interval in milliseconds", 1000);
@@ -58,7 +71,7 @@ namespace ts {
         }
         
         
-        std::unique_ptr<traffic_strategy> strategy;
+        producer_t strategy_fn;
         milliseconds interval;
         steady_clock::time_point last_update = epoch;
     };

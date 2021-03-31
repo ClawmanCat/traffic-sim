@@ -12,6 +12,7 @@ namespace ts {
         std::vector<route_id> crosses;
         milliseconds clearing_time;
         std::optional<bool> waiting, coming, emergency;
+        int most_recent_msg = min_value<int>;
         
         
         [[nodiscard]] constexpr auto operator<=>(const route_state& o) const {
@@ -29,12 +30,24 @@ namespace ts {
     };
     
     
-    route_state::light_state& operator++(route_state::light_state& s) {
+    inline route_state::light_state& operator++(route_state::light_state& s) {
         s = (s == route_state::light_state::RED_SAFE)
             ? route_state::light_state::GREEN
             : (route_state::light_state) (((int) s) + 1);
             
         return s;
+    }
+    
+    
+    inline std::string_view light_state_to_string(route_state::light_state s) {
+        using ls = route_state::light_state;
+        
+        switch (s) {
+            case ls::GREEN:         return "green";
+            case ls::ORANGE:        return "orange";
+            case ls::RED_BLOCKING:  [[fallthrough]];
+            case ls::RED_SAFE:      return "red";
+        }
     }
     
     
@@ -49,12 +62,20 @@ namespace ts {
         void update(route_state&& value) {
             std::lock_guard lock { mtx };
             
-            auto it = routes.find(value.id);
+            auto id = value.id;
+            auto [it, inserted] = routes.insert_or_assign(id, std::move(value));
+            auto& route = it->second;
             
-            if (it == routes.end()) routes[value.id] = std::move(value);
-            else if (it->second != value) {
-                it->second = std::move(value);
-                changes.push_back(&(it->second));
+            auto changed_it = std::find_if(
+                changes.begin(),
+                changes.end(),
+                [&](const auto* rs) { return rs->id == id; }
+            );
+            
+            if (changed_it == changes.end()) {
+                changes.push_back(&route);
+            } else {
+                (*changed_it) = &route;
             }
         }
         
