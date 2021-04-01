@@ -13,27 +13,32 @@ namespace ts {
     // Assuming that 'str' is a valid message of type 'notify_state_change',
     // decodes the message into the route objects encoded within it.
     inline std::vector<route_state> from_json(std::string_view str) {
-        json message = json::parse(str);
-        
-        auto value_or = [] <typename T>(const json& j, std::string_view key, T default_value) {
-            auto it = j.find(key);
-            return (it == j.end()) ? default_value : (T) *it;
-        };
-        
-        std::vector<route_state> result;
-        for (const auto& j : (std::vector<json>) message["data"]) {
-            result.push_back(route_state {
-                .id              = j["id"],
-                .crosses         = j["crosses"],
-                .clearing_time   = milliseconds(long(1000 * ((float) j["clearing_time"]))),
-                .waiting         = value_or(j, "vehicles_waiting",  true),
-                .coming          = value_or(j, "vehicles_coming",   true),
-                .emergency       = value_or(j, "emergency_vehicle", true),
-                .most_recent_msg = message["msg_id"]
-            });
+        try {
+            json message = json::parse(str);
+            
+            auto value_or = [] <typename T>(const json& j, std::string_view key, T default_value) {
+                auto it = j.find(key);
+                return (it == j.end()) ? default_value : (T) *it;
+            };
+            
+            std::vector<route_state> result;
+            for (const auto& j : (std::vector<json>) message["data"]) {
+                result.push_back(route_state {
+                    .id              = j["id"],
+                    .crosses         = j["crosses"],
+                    .clearing_time   = milliseconds(long(1000 * ((float) j["clearing_time"]))),
+                    .waiting         = value_or(j, "vehicles_waiting",  true),
+                    .coming          = value_or(j, "vehicles_coming",   true),
+                    .emergency       = value_or(j, "emergency_vehicle", true),
+                    .most_recent_msg = message["msg_id"]
+                });
+            }
+            
+            return result;
+        } catch (...) {
+            console_io::out("Failed to decode JSON message. No changes will be recorded:\n", str);
+            return {};
         }
-        
-        return result;
     }
     
     
