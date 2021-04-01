@@ -2,6 +2,8 @@ import websockets
 import asyncio
 import json
 import time
+import socket
+import sys
 
 
 dummy_message = {
@@ -41,19 +43,27 @@ async def on_state_change_received(ws):
 async def on_client_connected(ws, path):
     print(f'Client connected from {ws.remote_address[0]}')
 
-    while True:
-        try:
+    
+    try:
+        while True:
             send_task = asyncio.ensure_future(notify_state_change(ws))
             recv_task = asyncio.ensure_future(on_state_change_received(ws))
             
             done, pending = await asyncio.wait([send_task, recv_task], return_when = asyncio.FIRST_COMPLETED)
             for task in pending: task.cancel()
-        except Exception as e:
-            print(f'Error: {e}')
-            return
+            
+            # Unpack exceptions from future so they can be caught.
+            f, = done
+            e = f.exception()
+            if e is not None: raise e
+    except Exception as e:
+        print(f'Error occurred in connection with {ws.remote_address[0]}: {e}')
     
 
-server_fn = websockets.serve(on_client_connected, "localhost", 6969)
+# Note: connect with local ip, (e.g. 192.168.*.*:6969) or normal IP if portforwarding is enabled.
+# localhost and loopback address are unlikely to work.
+local_ip  = socket.gethostbyname(socket.gethostname())
+server_fn = websockets.serve(on_client_connected, local_ip, 6969)
 
 asyncio.get_event_loop().run_until_complete(server_fn)
 asyncio.get_event_loop().run_forever()
