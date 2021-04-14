@@ -22,16 +22,29 @@ message_layout = {
 # Only send a new message if at least 3 seconds have elapsed since the last one.
 last_state_change = 0
 
-
+def create_init_message():
+    message = copy.deepcopy(message_layout)
+    message['msg_type'] = "initialization"
+    for key, traffic_light in simulation_state.items():
+        data = {
+            "id": key,
+            "crosses": traffic_light.crossing,
+            "clearing_time": traffic_light.clearing_time,
+        }
+        message['data'].append(data)
+    return message
+        
 def parse_sim_data():
     message = copy.deepcopy(message_layout)
     for key, traffic_light in simulation_state.items():
         data = {
             "id": key,
-            "state": traffic_light.state
+            "vehicles_waiting": traffic_light.vehicles_waiting,
+            "vehicles_coming": traffic_light.vehicles_waiting,
+            "emergency_vehicle": traffic_light.vehicles_waiting,
+            
         }
         message['data'].append(data)
-    print(message)
     return message
 
 
