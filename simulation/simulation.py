@@ -7,6 +7,9 @@ import copy
 from trafficLight import TrafficLight
 import sys
 
+
+first_message = 1
+
 simulation_state = {
     1: TrafficLight([2, 3], 10, "green"),
     2: TrafficLight([1, 3], 10, "red"),
@@ -50,22 +53,33 @@ def parse_sim_data():
 
 async def send_state(ws):
     global last_state_change
+    global first_message
     if time.time() - last_state_change < 3.0: return
-
-    await ws.send(json.dumps(parse_sim_data()))
+    
+    if first_message:
+        await ws.send(json.dumps(create_init_message()))
+        first_message = False
+    else:
+        await ws.send(json.dumps(parse_sim_data()))
     last_state_change = time.time()
 
 
 async def receive_traffic_lights_state(ws):
     async for message in ws:
+        json_message = ''
+        try:
+            message = json.loads(message)
+        except Exception as e:
+            print(f"json error: {e}")
+            
         for crossing_state in message['data']:
-            simulation_state[crossing_state['id']].state = crossing_state['state']
+            traffic_light = simulation_state[crossing_state['id']]
+            traffic_light.state = crossing_state['state']
         print(f'Received new state:\n{message}')
 
 
 async def on_client_connected(ws, path):
     print(f'Client connected from {ws.remote_address[0]}')
-
     try:
         while True:
             send_task = asyncio.ensure_future(send_state(ws))
@@ -85,7 +99,7 @@ async def on_client_connected(ws, path):
 # localhost and loopback address are unlikely to work.
 
 local_ip = socket.gethostbyname(socket.gethostname())
-server_fn = websockets.serve(on_client_connected, local_ip, 6969)
+server_fn = websockets.serve(on_client_connected, local_ip , 6969)
 
 asyncio.get_event_loop().run_until_complete(server_fn)
 asyncio.get_event_loop().run_forever()
