@@ -81,6 +81,11 @@ namespace ts {
             
             unsigned updated = 0;
             for (auto& route : new_states) {
+                if (!state.routes.contains(route.id)) {
+                    state.routes[route.id] = route;
+                    continue;
+                }
+                
                 auto& old = state.routes[route.id];
                 
                 if (route.most_recent_msg > old.most_recent_msg) {
