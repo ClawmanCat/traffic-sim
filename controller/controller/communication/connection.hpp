@@ -74,7 +74,7 @@ namespace ts {
     
     
         void on_msg_received(std::string_view msg) {
-            auto new_states = from_json(msg);
+            auto new_states = from_json(msg, simulation_state::instance().routes);
     
             auto& state = simulation_state::instance();
             std::scoped_lock lock { state.mtx };

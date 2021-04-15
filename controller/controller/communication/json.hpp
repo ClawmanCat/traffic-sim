@@ -10,9 +10,9 @@ namespace ts {
     using json = nlohmann::json;
     
     
-    // Assuming that 'str' is a valid message of type 'notify_state_change',
+    // Assuming that 'str' is a valid message,
     // decodes the message into the route objects encoded within it.
-    inline std::vector<route_state> from_json(std::string_view str) {
+    inline std::vector<route_state> from_json(std::string_view str, const std::unordered_map<route_id, route_state>& old_state = {}) {
         try {
             json message = json::parse(str);
             
@@ -21,22 +21,48 @@ namespace ts {
                 return (it == j.end()) ? default_value : (T) *it;
             };
             
-            std::vector<route_state> result;
-            for (const auto& j : (std::vector<json>) message["data"]) {
-                result.push_back(route_state {
-                    .id              = j["id"],
-                    .crosses         = j["crosses"],
-                    .clearing_time   = milliseconds(long(1000 * ((float) j["clearing_time"]))),
-                    .waiting         = value_or(j, "vehicles_waiting",  true),
-                    .coming          = value_or(j, "vehicles_coming",   true),
-                    .emergency       = value_or(j, "emergency_vehicle", true),
-                    .most_recent_msg = message["msg_id"]
-                });
-            }
             
-            return result;
+            if (message["msg_type"] == "initialization") {
+                std::vector<route_state> result;
+                
+                for (const auto& j : (std::vector<json>) message["data"]) {
+                    result.push_back(route_state {
+                        .id              = j["id"],
+                        .crosses         = j["crosses"],
+                        .clearing_time   = milliseconds(long(1000 * ((float) j["clearing_time"]))),
+                        .most_recent_msg = message["msg_id"]
+                    });
+                }
+    
+                return result;
+            } else if (message["msg_type"] == "notify_sensor_change") {
+                std::vector<route_state> result;
+    
+                for (const auto& j : (std::vector<json>) message["data"]) {
+                    result.push_back(route_state {
+                        .id              = j["id"],
+                        .crosses         = old_state.at((route_id) j["id"]).crosses,
+                        .clearing_time   = old_state.at((route_id) j["id"]).clearing_time,
+                        .waiting         = value_or(j, "vehicles_waiting",  true),
+                        .coming          = value_or(j, "vehicles_coming",   true),
+                        .emergency       = value_or(j, "emergency_vehicle", true),
+                        .most_recent_msg = message["msg_id"]
+                    });
+                }
+    
+                return result;
+            } else {
+                console_io::out("Unknown message type: "s + (std::string) message["msg_type"]);
+                return {};
+            }
         } catch (std::exception& e) {
-            console_io::out("Failed to decode JSON message. No changes will be recorded:\n", e.what());
+            console_io::out(
+                "Failed to decode JSON message. No changes will be recorded:\n",
+                e.what(), "\n",
+                "While decoding JSON object:\n",
+                str
+            );
+            
             return {};
         }
     }
