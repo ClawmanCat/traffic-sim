@@ -26,10 +26,12 @@ namespace ts {
             while (true) {
                 last_update = steady_clock::now();
                 
-                auto changes = strategy->update();
-                if (!changes.empty()) console_io::out("Changed ", changes.size(), " lights.");
-                
-                for (auto&& change : changes) simulation_state::instance().update(std::move(change));
+                if (!simulation_state::instance().empty()) {
+                    auto changes = strategy->update();
+                    if (!changes.empty()) console_io::out("Changed ", changes.size(), " lights.");
+    
+                    for (auto&& change : changes) simulation_state::instance().update(std::move(change));
+                }
     
                 connection::instance().transmit_changes();
                 std::this_thread::sleep_until(last_update + interval);

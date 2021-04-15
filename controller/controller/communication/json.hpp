@@ -16,7 +16,7 @@ namespace ts {
         try {
             json message = json::parse(str);
             
-            auto value_or = [] <typename T>(const json& j, std::string_view key, T default_value) {
+            auto value_or = [] <typename T> (const json& j, std::string_view key, T default_value) {
                 auto it = j.find(key);
                 return (it == j.end()) ? default_value : (T) *it;
             };
@@ -35,8 +35,8 @@ namespace ts {
             }
             
             return result;
-        } catch (...) {
-            console_io::out("Failed to decode JSON message. No changes will be recorded:\n", str);
+        } catch (std::exception& e) {
+            console_io::out("Failed to decode JSON message. No changes will be recorded:\n", e.what());
             return {};
         }
     }

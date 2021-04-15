@@ -95,6 +95,11 @@ namespace ts {
             std::lock_guard lock { mtx };
             for (const auto& [k, v] : routes) pred(k, v);
         }
+        
+        
+        bool empty(void) const {
+            return routes.empty();
+        }
     private:
         friend class connection;
         friend struct owning_view;
