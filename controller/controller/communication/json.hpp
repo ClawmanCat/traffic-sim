@@ -73,7 +73,7 @@ namespace ts {
         static unsigned counter = 0;
         
         json message;
-        message["msg_type"] = "perform_state_change";
+        message["msg_type"] = "notify_traffic_light_change";
         message["msg_id"]   = counter++;
         message["data"]     = std::vector<json>{};
         
