@@ -50,7 +50,7 @@ namespace ts {
             
             ix::initNetSystem();
             
-            auto url = console_io::in<std::string>("Please enter a URL to connect to", "ws://127.0.0.1:6969");
+            auto url = console_io::in<std::string>("Please enter a URL to connect to", "ws://192.168.178.32:6969");
             ws.setUrl(url);
             
             console_io::out("Connecting to ", url, "...");
@@ -83,6 +83,7 @@ namespace ts {
             for (auto& route : new_states) {
                 if (!state.routes.contains(route.id)) {
                     state.routes[route.id] = route;
+                    ++updated;
                     continue;
                 }
                 
