@@ -1,7 +1,7 @@
 import copy
 import json
 import time
-
+from threading import Lock
 
 message_template = {
     "msg_type": "notify_sensor_change",
@@ -53,6 +53,7 @@ class Connection:
 
         print(f'Sending state for { len(message["data"]) } traffic lights.')
         await self.ws.send(json.dumps(message))
+
         self.last_message_time = time.time()
 
 

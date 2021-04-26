@@ -16,15 +16,16 @@ namespace ts {
         std::vector<route_state> update(void) override {
             auto states = simulation_state::instance().view();
             
+            std::size_t num_lights = std::min(16ull, states->size());
             std::vector<route_state> result = routes
                 | views::transform([&](auto id) { return states->at(id); })
                 | views::cycle
-                | views::drop(3 * n)
-                | views::take(3)
+                | views::drop(num_lights * n)
+                | views::take(num_lights)
                 | views::transform([&](auto state) { return ++state.state, state; })
                 | to<std::vector>;
             
-            n += 3;
+            n += num_lights;
             
             return result;
         };

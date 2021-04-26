@@ -10,9 +10,11 @@ from game import Game
 
 async def on_client_connected(ws, path):
     print(f'Client connected from {ws.remote_address[0]}')
+
     try:
-        game = Game()
+        # TODO: Move game to separate thread.
         conn = Connection(ws)
+        game = Game(conn)
 
         while True:
             game.loop()
