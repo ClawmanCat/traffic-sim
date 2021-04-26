@@ -10,11 +10,45 @@ from vehicle import Vehicle, SpawnPoint, Road
 def load_intersection_layout(game):
     return {
         # TODO: Real traffic lights
-        1: TrafficLight([2, 3], 10, "green", (2914, 606), game),
-        # 2: TrafficLight([1, 3], 10, "red", (0, 0), game),
-        # 3: TrafficLight([1, 2], 10, "red", (0, 0), game),
-        # 4: TrafficLight([5], 3, "green", (0, 0), game),
-        # 5: TrafficLight([4], 4, "green", (0, 0), game),
+
+        1: TrafficLight([4], 4, "red", (530, 520), game),  # 1
+        2: TrafficLight([4], 4, "red", (488, 613), game),  # 2
+        3: TrafficLight([4], 4, "red", (512, 739), game),  # 3
+        4: TrafficLight([4], 4, "red", (486, 923), game),  # 4
+        5: TrafficLight([4], 4, "red", (510, 520), game),  # 5
+        6: TrafficLight([4], 4, "red", (759, 1118), game),  # 6
+        7: TrafficLight([4], 4, "red", (940, 1097), game),  # 7
+        8: TrafficLight([4], 4, "red", (1040, 1095), game),  # 8
+        9: TrafficLight([4], 4, "red", (1075, 1124), game),  # 9
+        10: TrafficLight([4], 4, "red", (680, 1095), game),  # 10
+        11: TrafficLight([1, 3], 10, "red", (1225, 925), game),  # 11
+        12: TrafficLight([5], 3, "red", (1275, 850), game),  # 12
+        13: TrafficLight([4], 4, "red", (1249, 723), game),  # 13
+        14: TrafficLight([4], 4, "red", (1276, 536), game),  # 14
+        15: TrafficLight([1, 2], 10, "red", (1250, 925), game),  # 15
+        16: TrafficLight([4], 4, "red", (1081, 391), game),  # 16
+        17: TrafficLight([4], 4, "red", (1003, 338), game),  # 17
+        18: TrafficLight([4], 4, "red", (819, 363), game),  # 18
+        19: TrafficLight([4], 4, "red", (688, 336), game),  # 19
+        20: TrafficLight([4], 4, "red", (1081, 365), game),  # 20
+        21: TrafficLight([4], 4, "red", (671, 755), game),  # 21 heeft meerdere stoplichten ?
+        22: TrafficLight([4], 4, "red", (671, 808), game),  # 22
+        23: TrafficLight([4], 4, "red", (671, 860), game),  # 23
+        24: TrafficLight([4], 4, "red", (671, 913), game),  # 24 heeft meerdere stoplichten
+        25: TrafficLight([4], 4, "red", (959, 943), game),  # 25 heeft meerdere stoplichten
+        26: TrafficLight([4], 4, "red", (1011, 943), game),  # 26
+        27: TrafficLight([4], 4, "red", (1064, 943), game),  # 27
+        28: TrafficLight([4], 4, "red", (735, 1214), game),  # 28
+        29: TrafficLight([4], 4, "red", (1092, 705), game),  # 29 heeft meerdere stoplichten
+        30: TrafficLight([4], 4, "red", (1092, 653), game),  # 30
+        31: TrafficLight([4], 4, "red", (1092, 600), game),  # 31
+        32: TrafficLight([4], 4, "red", (1092, 548), game),  # 32
+        33: TrafficLight([4], 4, "red", (891, 519), game),  # 33 meerdere stoplichten
+        34: TrafficLight([4], 4, "red", (750, 519), game),  # 34
+        35: TrafficLight([4], 4, "red", (694, 519), game),  # 35
+        36: TrafficLight([4], 4, "red", (2396, 966 ), game),  # 36 meerdere stoplichten
+        37: TrafficLight([4], 4, "red", (2567, 1202), game),  # 37 meerdere stoplichten
+
     }
 
 
