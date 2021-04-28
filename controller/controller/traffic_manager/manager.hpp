@@ -3,8 +3,8 @@
 #include <controller/common.hpp>
 #include <controller/console_io.hpp>
 #include <controller/traffic_manager/strategy/strategy.hpp>
-#include <controller/traffic_manager/strategy/round_robin.hpp>
 #include <controller/traffic_manager/strategy/test_strategy.hpp>
+#include <controller/traffic_manager/strategy/accumulative_priority_strategy.hpp>
 #include <controller/communication/state.hpp>
 #include <controller/communication/connection.hpp>
 
@@ -43,8 +43,8 @@ namespace ts {
         
         traffic_manager(void) {
             std::vector<std::pair<std::string, producer_t>> strategies {
-                { "Round Robin", []() { return (strategy_t) std::make_unique<strategy_round_robin>(); } },
-                { "Testing",     []() { return (strategy_t) std::make_unique<strategy_test>(); } }
+                { "Testing",         []() { return (strategy_t) std::make_unique<strategy_test>(); } },
+                { "Accum. Priority", []() { return (strategy_t) std::make_unique<strategy_accumulative_priority>(); } }
             };
             
             

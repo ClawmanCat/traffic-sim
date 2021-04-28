@@ -11,7 +11,7 @@ namespace ts {
         enum class light_state { GREEN, ORANGE, RED_BLOCKING, RED_SAFE } state;
         std::vector<route_id> crosses;
         milliseconds clearing_time;
-        std::optional<bool> waiting, coming, emergency;
+        bool waiting = false, coming = false, emergency = false;
         int most_recent_msg = min_value<int>;
         
         

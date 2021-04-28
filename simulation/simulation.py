@@ -36,7 +36,7 @@ async def on_client_connected(ws, path):
         traceback.print_exc()
 
 
-require_connection = False
+require_connection = True
 if require_connection:
     # Note: connect with local ip, (e.g. 192.168.*.*:6969) or normal IP if portforwarding is enabled.
     # localhost and loopback address are unlikely to work.
@@ -48,6 +48,7 @@ if require_connection:
     asyncio.get_event_loop().run_forever()
 else:
     game = Game(None)
+
     while True:
         game.loop()
         time.sleep(1.0 / game.tick_rate)
