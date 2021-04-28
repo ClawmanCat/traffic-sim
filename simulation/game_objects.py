@@ -185,7 +185,7 @@ class Road:
                     updates[sensor.type.name] = True
 
             for key, value in updates.items():
-                light = self.game.state[self.light]
+                light = self.game.state[self.light.id]
                 setattr(light, key, value)
 
 

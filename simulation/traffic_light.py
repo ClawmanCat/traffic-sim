@@ -11,7 +11,8 @@ class TrafficLight:
     green_light = pygame.image.load(os.path.join('assets', 'green.png'))
 
 
-    def __init__(self, crossings, clearing_time, state, position, game):
+    def __init__(self, id, crossings, clearing_time, state, position, game):
+        self.id = id
         self.crossing = crossings  # cant go on green
         self.clearing_time = clearing_time
         self.vehicles_waiting = False

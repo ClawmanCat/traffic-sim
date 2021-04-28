@@ -13,7 +13,7 @@ def load_intersection_layout(game):
     light_dict = {}
 
     def add_light(index, crossing, position, clearing_time=4.0):
-        light_dict[index] = TrafficLight(crossing, clearing_time, "red", position, game)
+        light_dict[index] = TrafficLight(index, crossing, clearing_time, "red", position, game)
 
     add_light(1,                                           [30, 31, 35],   (530, 520), 4)
     add_light(2,                                           [30, 31, 35],   (488, 613), 4)
@@ -57,6 +57,9 @@ def load_intersection_layout(game):
 
 
 def loads_roads(game):
+    VC = Sensor.SensorType.VEHICLES_COMING
+    VW = Sensor.SensorType.VEHICLES_WAITING
+    
     roads = dict()
     road_conns = dict()
 
@@ -89,16 +92,16 @@ def loads_roads(game):
     add_road(6, (3018, 1260), (3448, 1260), None, [], [])
     add_road(7, (3367, 1571), (3367, 1023), None, [], [])
     add_road(8, (79, 906), (690, 906), 24, [35, 36], [
-        (Box((285, 895), (313, 920)),"vehicles_coming"),
-        (Box((395, 895 ), (423, 920)), "vehicles_waiting")
+        (Box((285, 895), (313, 920)), VC),
+        (Box((395, 895 ), (423, 920)), VW)
     ])
     add_road(9, (79, 853), (675, 853), 23, [40], [
-        (Box((285, 840), (313, 867)), "vehicles_coming"),
-        (Box((395, 840 ), (423, 867)), "vehicles_waiting")
+        (Box((285, 840), (313, 867)), VC),
+        (Box((395, 840 ), (423, 867)), VW)
     ])
     add_road(10, (79, 800), (675, 800), 22, [41], [
-        (Box((285, 788), (313, 815)), "vehicles_coming"),
-        (Box((395, 788 ), (423, 815)), "vehicles_waiting")
+        (Box((285, 788), (313, 815)), VC),
+        (Box((395, 788 ), (423, 815)), VW)
     ])
     add_road(11, (1056, 1487), (1056, 856), 27, [52], [])
     add_road(12, (1005, 1487), (1005, 856), 26, [], [])
@@ -120,10 +123,7 @@ def loads_roads(game):
     add_road(28, (610, 1062), (1134, 1062), None, [], [])
     add_road(29, (610, 1115), (1134, 1115), None, [], [])
     add_road(30, (79, 749), (648, 749), 21, [31], [])
-    add_road(31, (648, 749), (1002, 749), None, [32, 34], [
-        (Box((285, 735), (313, 763)), "vehicles_coming"),
-        (Box((395, 735), (423, 763)), "vehicles_waiting") 
-    ])
+    add_road(31, (648, 749), (1002, 749), None, [32, 34], [])
     add_road(32, (1002, 749), (1056, 749), None, [33], [])
     add_road(33, (1056, 749), (1056, 100), None, [], [])
     add_road(34, (1002, 749), (1002, 100), None, [], [])
