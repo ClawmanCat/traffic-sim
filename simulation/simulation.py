@@ -36,7 +36,7 @@ async def on_client_connected(ws, path):
         traceback.print_exc()
 
 
-require_connection = True
+require_connection = False
 if require_connection:
     # Note: connect with local ip, (e.g. 192.168.*.*:6969) or normal IP if portforwarding is enabled.
     # localhost and loopback address are unlikely to work.
