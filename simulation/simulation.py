@@ -9,7 +9,7 @@ from connection import Connection
 from game import Game
 
 
-require_connection = True
+require_connection = False
 use_debug_layout   = False
 
 

@@ -56,8 +56,10 @@ class Layout:
 
     @staticmethod
     def loads_roads(game):
-        VC = Sensor.SensorType.VEHICLES_COMING
-        VW = Sensor.SensorType.VEHICLES_WAITING
+        VC  = Sensor.SensorType.VEHICLES_COMING
+        VW  = Sensor.SensorType.VEHICLES_WAITING
+        VB  = Sensor.SensorType.BLOCKING
+        BUS = Sensor.SensorType.PUBLIC_TRANSPORT
 
         roads = dict()
         road_conns = dict()
@@ -91,7 +93,7 @@ class Layout:
         add_road(6, (3018, 1260), (3448, 1260), None, [], [])
         add_road(7, (3367, 1571), (3367, 1010), None, [], [])
         add_road(8, (79, 906), (690, 906), 24, [35, 36], [
-            (Box((286, 895), (430, 925)), VC),
+            (Box((286, 895), (316, 925)), VC),
             (Box((618, 895), (648 , 925)), VW)
         ])
         add_road(9, (79, 856), (1005, 856), 23, [40], [
@@ -111,19 +113,22 @@ class Layout:
             (Box((991 , 1421), (1018 , 1448)), VC)
         ])
         add_road(13, (950, 1485), (950, 540), 25, [54], [
-            (Box((938, 1237), (965, 1265)), VW),
-            (Box((938, 1421), (965, 1448)), VC)
+            (Box((940, 958), (970, 988)), VW),
+            (Box((936, 1421), (966, 1452)), VC)
         ])
         add_road(14, (1110, 1487), (1110, 1245), 28, [], [])  # bus line
         add_road(15, (688, 100), (688, 540), 35, [43, 51], [
-            (Box((673, 180), (700, 210)), VC),
-            (Box((670 , 266), (700 , 296)), VW)
+            (Box((670, 180), (700, 210)), VC),
+            (Box((670 , 468), (700 , 498)), VW)
         ])
         add_road(16, (740, 100), (740, 856), 34, [44, 46], [
-            (Box((726, 180), (746, 200)), VC),
-            (Box((726, 478), (745, 498)), VW)
+            (Box((726, 180), (756, 210)), VC),
+            (Box((726, 468), (756, 498)), VW)
         ])
-        add_road(17, (792, 100), (792, 856), 33, [48, 47], [])
+        add_road(17, (792, 100), (792, 856), 33, [48, 47], [
+            (Box((778, 180), (808, 210)), VC),
+            (Box((778, 468), (808, 498)), VW)
+        ])
         add_road(18, (2826, 1062), (1552, 1062), None, [], [])
         add_road(19, (2826, 1115), (1552, 1115), None, [], [])
         add_road(20, (2826, 380), (1552, 380), None, [], [])
@@ -185,22 +190,22 @@ class Layout:
         add_road(67, (2060, 648), (2060, 700), None, [74], [])
         add_road(68, (2060, 588), (2060, 537), None, [69], [])
         add_road(69, (2060, 537), (1056, 537), 32, [70], [
-            (Box((1300, 526), (1329,  553)), VC),
-            (Box((1300, 526), (1329, 553)), VW)
+            (Box((1400, 526), (1430,  556)), VC),
+            (Box((1100, 526), (1130, 556)), VW)
         ])
         add_road(70, (1056, 537), (1056, 70), None, [], [])
         add_road(71, (2060, 588), (720, 588), 31, [72], [
-            (Box((1300, 578), (1329, 606)), VC),
-            (Box((1300, 578), (1329, 606)), VW)
+            (Box((1400, 578), (1430, 608)), VC),
+            (Box((1100, 578), (1130, 608)), VW)
         ])
         add_road(72, (720, 588), (688, 540), None, [43], [])
         add_road(73, (2060, 648), (720, 648), 30, [74], [
-            (Box((1300, 631), (1329, 658)), VC),
-            (Box((1300, 631), (1329, 658)), VW)
+            (Box((1400, 630), (1430, 660)), VC),
+            (Box((1100, 630), (1130, 660)), VW)
         ])
         add_road(74, (720, 648), (688, 591), 29, [51], [
-            (Box((1300, 683), (1329, 711)), VC),
-            (Box((1300, 683), (1329, 711)), VW)
+            (Box((1400, 680), (1430, 710)), VC),
+            (Box((1100, 680), (1130, 710)), VW)
         ])
         add_road(75, (2060, 700), (690, 700), None, [76], [])
         add_road(76, (690, 700), (690, 906), None, [35], [])
@@ -262,6 +267,6 @@ class Layout:
             else:
                 raise NotImplementedError()
 
-            result.append(SpawnPoint(game, type, game.roads[road_idx], speed, cooldown = cooldown))
+            result.append(SpawnPoint(game, type, game.roads[road_idx], speed = speed, cooldown = cooldown))
 
         return result
