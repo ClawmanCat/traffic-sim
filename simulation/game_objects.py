@@ -130,6 +130,8 @@ class Road:
 
         pygame.draw.line(self.game.screen, (139, 0, 139), start, end, 2)
 
+        for sensor in self.sensors: sensor.render()
+
 
     def tick(self):
         # Move vehicles and transfer to next road if they reach the end.
@@ -190,10 +192,11 @@ class Road:
 
 
 class Sensor:
-    # TODO: Implement other sensor types.
     class SensorType(Enum):
         VEHICLES_WAITING = "vehicles_waiting"
         VEHICLES_COMING  = "vehicles_coming"
+        PUBLIC_TRANSPORT = "public_vehicle"
+        BLOCKING         = "vehicles_blocking"
 
 
     def __init__(self, road, area, type):
@@ -203,17 +206,50 @@ class Sensor:
         self.pressed = False
         self.changed = False
 
+        mmb = minmaxbox(self.area)
+        end_a  = project(sub(mmb.min, self.road.start), self.road.vector)
+        end_b  = project(sub(mmb.max, self.road.start), self.road.vector)
+        dist_a = mag(end_a)
+        dist_b = mag(end_b)
+
+        self.min_progress = min(dist_a, dist_b)
+        self.max_progress = max(dist_a, dist_b)
+
+
     def tick(self):
         previously_pressed = self.pressed
 
         for vehicle in self.road.vehicles:
-            if is_in_box(vehicle.position, self.area):
+            if self.min_progress <= vehicle.progress <= self.max_progress:
                 self.pressed = True
                 break
         else:
             self.pressed = False
 
         self.changed = (self.pressed != previously_pressed)
+
+        if self.changed:
+            self.road.light.dirty = True
+            setattr(self.road.light, self.type.value, self.pressed)
+
+
+    def render(self):
+        box = minmaxbox(self.area)
+
+        tl = add(self.road.game.translation, box.min)
+        wh = sub(box.max, box.min)
+
+        inactive_color = (127, 127, 127)
+        active_color   = (60,  105, 43)
+        blink_color    = (255, 0,   0)
+
+        pygame.draw.rect(
+            self.road.game.screen,
+            blink_color if self.changed else
+            active_color if self.pressed else
+            inactive_color,
+            pygame.Rect(tl, wh)
+        )
 
     def is_pressed(self):
         return self.pressed
@@ -237,7 +273,6 @@ class Bridge(Road):
         self.state             = Bridge.State.CLOSED
         self.open_time         = 100
         self.open_percentage   = 0
-        self.last_state_change = 0
 
         # Perform the clearing time trick as specified in the TS.
         self.hidden_clearing_time = self.clearing_time

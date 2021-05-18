@@ -22,6 +22,7 @@ class TrafficLight:
         self.position = position
         self.game = game
         self.image = TrafficLight.red_light
+        self.dirty = False
 
     def render(self):
         if self.state == "red": self.image = TrafficLight.red_light

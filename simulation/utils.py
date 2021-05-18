@@ -8,6 +8,13 @@ class Box:
         self.max = max
 
 
+def minmaxbox(box):
+    return Box(
+        (min(box.min[0], box.max[0]), min(box.min[1], box.max[1])),
+        (max(box.min[0], box.max[0]), max(box.min[1], box.max[1]))
+    )
+
+
 def vec(x, dims = 2):
     return tuple([x] * dims)
 

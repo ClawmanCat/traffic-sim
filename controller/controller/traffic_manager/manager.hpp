@@ -30,7 +30,13 @@ namespace ts {
                     auto changes = strategy->update();
                     if (!changes.empty()) console_io::out("Changed ", changes.size(), " lights.");
     
-                    for (auto&& change : changes) simulation_state::instance().update(std::move(change));
+                    for (auto&& change : changes) {
+                        auto old_state = simulation_state::instance().view()->find(change.id)->second.state;
+                        auto new_state = change.state;
+                        
+                        console_io::out("Light ", change.id, ": ", light_state_to_string(old_state), " => ", light_state_to_string(new_state));
+                        simulation_state::instance().update(std::move(change));
+                    }
                 }
     
                 connection::instance().transmit_changes();

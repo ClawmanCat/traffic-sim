@@ -28,8 +28,14 @@ namespace ts {
                 for (const auto& j : (std::vector<json>) message["data"]) {
                     result.push_back(route_state {
                         .id              = j["id"],
+                        .state           = route_state::light_state::RED_SAFE,
                         .crosses         = j["crosses"],
                         .clearing_time   = milliseconds(long(1000 * ((float) j["clearing_time"]))),
+                        .waiting         = true,
+                        .coming          = false,
+                        .emergency       = false,
+                        .bus             = false,
+                        .blocked         = false,
                         .most_recent_msg = message["msg_id"]
                     });
                 }
@@ -39,13 +45,21 @@ namespace ts {
                 std::vector<route_state> result;
     
                 for (const auto& j : (std::vector<json>) message["data"]) {
+                    const auto& old = old_state.at((route_id) j["id"]);
+                    
+                    if (old.most_recent_msg >= message["msg_id"]) {
+                        console_io::out("Ignoring message for light ", old.id, ": the msg_id indicates this message is outdated.");
+                    }
+                    
                     result.push_back(route_state {
                         .id              = j["id"],
-                        .crosses         = old_state.at((route_id) j["id"]).crosses,
-                        .clearing_time   = old_state.at((route_id) j["id"]).clearing_time,
-                        .waiting         = value_or(j, "vehicles_waiting",  true),
-                        .coming          = value_or(j, "vehicles_coming",   true),
-                        .emergency       = value_or(j, "emergency_vehicle", true),
+                        .crosses         = old.crosses,
+                        .clearing_time   = old.clearing_time,
+                        .waiting         = value_or(j, "vehicles_waiting",  old.waiting),
+                        .coming          = value_or(j, "vehicles_coming",   old.coming),
+                        .emergency       = value_or(j, "emergency_vehicle", old.emergency),
+                        .bus             = value_or(j, "public_vehicle",    old.bus),
+                        .blocked         = value_or(j, "vehicles_blocking", old.blocked),
                         .most_recent_msg = message["msg_id"]
                     });
                 }

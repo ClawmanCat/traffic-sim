@@ -11,7 +11,7 @@ namespace ts {
         enum class light_state { GREEN, ORANGE, RED_BLOCKING, RED_SAFE } state;
         std::vector<route_id> crosses;
         milliseconds clearing_time;
-        bool waiting = false, coming = false, emergency = false;
+        bool waiting = false, coming = false, emergency = false, bus = false, blocked = false;
         int most_recent_msg = min_value<int>;
         
         
@@ -31,10 +31,15 @@ namespace ts {
     
     
     inline route_state::light_state& operator++(route_state::light_state& s) {
-        s = (s == route_state::light_state::RED_SAFE)
-            ? route_state::light_state::GREEN
-            : (route_state::light_state) (((int) s) + 1);
-            
+        using ls = route_state::light_state;
+        
+        switch (s) {
+            case ls::GREEN:        s = ls::ORANGE;       break;
+            case ls::ORANGE:       s = ls::RED_BLOCKING; break;
+            case ls::RED_BLOCKING: s = ls::RED_SAFE;     break;
+            case ls::RED_SAFE:     s = ls::GREEN;        break;
+        }
+        
         return s;
     }
     

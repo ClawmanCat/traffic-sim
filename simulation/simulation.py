@@ -9,13 +9,17 @@ from connection import Connection
 from game import Game
 
 
+require_connection = True
+use_debug_layout   = False
+
+
 async def on_client_connected(ws, path):
     print(f'Client connected from {ws.remote_address[0]}')
 
     try:
         # TODO: Move game to separate thread.
         conn = Connection(ws)
-        game = Game(conn)
+        game = Game(conn, debug = use_debug_layout)
 
         while True:
             game.loop()
@@ -36,7 +40,6 @@ async def on_client_connected(ws, path):
         traceback.print_exc()
 
 
-require_connection = False
 if require_connection:
     # Note: connect with local ip, (e.g. 192.168.*.*:6969) or normal IP if portforwarding is enabled.
     # localhost and loopback address are unlikely to work.

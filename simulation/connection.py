@@ -40,19 +40,22 @@ class Connection:
             self.initialized = True
         else:
             for key, light in state.items():
+                if not light.dirty: continue
+                light.dirty = False
+
                 data = {
                     "id": key,
                     "vehicles_waiting":  light.vehicles_waiting,
-                    "vehicles_coming":   light.vehicles_waiting,
-                    "emergency_vehicle": light.vehicles_waiting,
+                    "vehicles_coming":   light.vehicles_coming,
+                    "emergency_vehicle": light.emergency_vehicle,
 
                 }
 
                 message['data'].append(data)
 
-
-        print(f'Sending state for { len(message["data"]) } traffic lights.')
-        await self.ws.send(json.dumps(message))
+        if len(message['data']) > 0:
+            print(f'Sending state for { len(message["data"]) } traffic lights.')
+            await self.ws.send(json.dumps(message))
 
         self.last_message_time = time.time()
 
@@ -69,4 +72,6 @@ class Connection:
 
             for crossing_state in json_message['data']:
                 traffic_light = state[crossing_state['id']]
+                print(f'Light {traffic_light.id}: {traffic_light.state} => {crossing_state["state"]}')
+
                 traffic_light.state = crossing_state['state']

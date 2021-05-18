@@ -38,9 +38,19 @@ namespace ts {
                 float& urgency = route_urgency[route.id];
                 
                 if (route.emergency) {
-                    urgency += 1e6f;
+                    urgency = 1e6f;
+                } else if (route.blocked) {
+                    urgency = -1e6f;
+                } else if (route.bus) {
+                    urgency = 1e3f;
                 } else if (route.waiting) {
-                    if (route.state != route_state::light_state::GREEN) urgency += 1.0f;
+                    if (route.state != route_state::light_state::GREEN) {
+                        urgency = std::max(urgency + 1.0f, 1e3f - 1.0f);
+                    }
+                } else if (route.coming) {
+                    if (route.state == route_state::light_state::GREEN) {
+                        urgency = std::max(urgency + 1.0f, 1e3f - 1.0f);
+                    }
                 } else {
                     urgency = 0.0f;
                 }
@@ -79,12 +89,12 @@ namespace ts {
             std::vector<route_id> ordered = order_routes();
             
             for (const auto& route : *state | views::values) {
-                if (route.state == route_state::light_state::GREEN) {
+                if (route.state != route_state::light_state::RED_SAFE) {
                     blocked.insert(route.crosses.begin(), route.crosses.end());
                 }
             }
             
-            for (const auto& route_id : ordered) {
+            for (const auto& route_id : ordered | views::reverse) {
                 const route_state& route = state->at(route_id);
                 
                 if (!blocked.contains(route_id) && route.state == route_state::light_state::RED_SAFE) {
