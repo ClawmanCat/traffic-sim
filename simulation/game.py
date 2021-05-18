@@ -123,7 +123,9 @@ def loads_roads(game):
     add_road(19, (2826, 1115), (1552, 1115), None, [], [])
     add_road(20, (2826, 380), (1552, 380), None, [], [])
     add_road(21, (2826, 328), (1552, 328), None, [], [])
-    add_road(22, (1268, 461), (1268, 985), None, [], [])
+    add_road(22, (1268, 461), (1268, 525), 14, [77], [
+
+    ])
     add_road(23, (1211, 461), (1211, 985), None, [], [])
     add_road(24, (1134, 328), (610, 328), None, [], [])
     add_road(25, (1134, 380), (610, 380), None, [], [])
@@ -199,6 +201,8 @@ def loads_roads(game):
     ])
     add_road(75, (2060, 700), (690, 700), None, [76], [])
     add_road(76, (690, 700), (690, 906), None, [35], [])
+    add_road(77, (1268, 525), (1268,  840), 12, [78], [])
+    add_road(78,  (1268,  840), (1268, 985), None, [], [])
 
     for i, connections_for_road in road_conns.items():
         roads[i].connections = [roads[j] for j in connections_for_road]
