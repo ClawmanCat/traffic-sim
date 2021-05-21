@@ -11,7 +11,7 @@ class TrafficLight:
     green_light = pygame.image.load(os.path.join('assets', 'green.png'))
 
 
-    def __init__(self, id, crossings, clearing_time, state, position, game):
+    def __init__(self, id, crossings, clearing_time, state, position, game, sync = True):
         self.id = id
         self.crossing = crossings  # cant go on green
         self.clearing_time = clearing_time
@@ -23,6 +23,7 @@ class TrafficLight:
         self.game = game
         self.image = TrafficLight.red_light
         self.dirty = False
+        self.sync = sync
 
     def render(self):
         if self.state == "red": self.image = TrafficLight.red_light

@@ -92,8 +92,8 @@ class Road:
         return self.light is None or self.light.state == 'green'
 
 
-    def add_sensor(self, area, type):
-        self.sensors.append(Sensor(self, area, type))
+    def add_sensor(self, area, type, target = None):
+        self.sensors.append(Sensor(self, area, type, target_light = target if target is not None else self.light))
 
 
     def add(self, vehicle):
@@ -183,12 +183,12 @@ class Road:
             for sensor in self.sensors:
                 sensor.tick()
 
-                if sensor.was_changed() and sensor.is_pressed():
-                    updates[sensor.type.name] = True
+                if sensor.was_changed():
+                    if sensor.target not in updates: updates[sensor.target] = []
+                    updates[sensor.target].append([sensor.type.name, sensor.is_pressed()])
 
             for key, value in updates.items():
-                light = self.game.state[self.light.id]
-                setattr(light, key, value)
+                for sensor_type, pressed in value: setattr(key, sensor_type, pressed)
 
 
 class Sensor:
@@ -199,10 +199,11 @@ class Sensor:
         BLOCKING         = "vehicles_blocking"
 
 
-    def __init__(self, road, area, type):
-        self.road = road
-        self.area = area
-        self.type = type
+    def __init__(self, road, area, type, target_light = None):
+        self.road   = road
+        self.area   = area
+        self.type   = type
+        self.target = target_light if target_light is not None else self.road.light
         self.pressed = False
         self.changed = False
 
@@ -258,7 +259,7 @@ class Sensor:
         return self.changed
 
 
-class Bridge(Road):
+class Bridge:
     class State(Enum):
         CLOSED  = 0
         OPENING = 1
@@ -266,43 +267,66 @@ class Bridge(Road):
         CLOSING = 3
 
 
-    def __init__(self, game, start, end, connections, area, light):
-        super().__init__(game, start, end, connections, light)
-
+    def __init__(self, game, area, roads, light):
+        self.game              = game
         self.area              = area
+        self.roads             = roads
+        self.light             = light
         self.state             = Bridge.State.CLOSED
         self.open_time         = 100
         self.open_percentage   = 0
+        self.state_duration    = 0
 
-        # Perform the clearing time trick as specified in the TS.
-        self.hidden_clearing_time = self.clearing_time
-        self.clearing_time        = self.clearing_time + self.open_time
-        self.light.clearing_time  = self.clearing_time
+        assert all(road.light is not None and not road.light.sync for road in self.roads)
+
+
+        self.boat_clearing_time  = self.roads[0].light.clearing_time
+        self.clearing_time       = 2 * self.boat_clearing_time + self.open_time
+        self.light.clearing_time = self.clearing_time
 
 
     def tick(self):
-        if self.light.state == 'green' and self.state not in [Bridge.State.OPENING, Bridge.State.OPEN]:
+        # There are three lights: one is synced with the controller, and controls whether the bridge is open or closed,
+        # the other two are not synced, and use the first light to control which side of the bridge will have a green light.
+        # TODO: Implement this in a less stupid way.
+        if self.light.state == "red":
+            self.progress_close()
+        else:
+            self.progress_open()
+
+
+        if self.state == Bridge.State.OPEN:
+            if self.light.state == "green":
+                self.roads[0].light.state = "green"
+                self.roads[1].light.state = "red"
+            else:
+                self.roads[1].light.state = "green"
+                self.roads[0].light.state = "red"
+        else:
+            self.roads[0].light.state = "red"
+            self.roads[1].light.state = "red"
+
+
+    def progress_open(self):
+        if self.state != Bridge.State.OPEN:
             self.state = Bridge.State.OPENING
+            self.open_percentage = min(self.open_percentage + 1, 100)
 
-        elif self.light.state != 'green' and self.state not in [Bridge.State.CLOSING, Bridge.State.CLOSED]:
-            self.state = Bridge.State.CLOSING
-
-        elif self.state == Bridge.State.OPENING and self.open_percentage >= self.open_time:
+        if self.open_percentage >= 100:
             self.state = Bridge.State.OPEN
 
-        elif self.state == Bridge.State.CLOSING and self.open_percentage == 0:
+
+    def progress_close(self):
+        if self.state != Bridge.State.CLOSED:
+            self.state = Bridge.State.CLOSING
+            self.open_percentage = max(self.open_percentage - 1, 0)
+
+        if self.open_percentage <= 0:
             self.state = Bridge.State.CLOSED
-
-        else:
-            if self.state == Bridge.State.OPENING: self.open_percentage += 1
-            if self.state == Bridge.State.CLOSING: self.open_percentage -= 1
-
-
-        super().tick()
 
 
     def can_vehicles_pass(self):
-        return self.state == Bridge.State.OPEN
+        return self.state == Bridge.State.CLOSED
 
 
     def render(self):
@@ -319,5 +343,3 @@ class Bridge(Road):
             (0, 41, 58), # Sea Blue
             bridge_rect
         )
-
-        super().render()

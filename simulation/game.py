@@ -35,6 +35,7 @@ class Game:
         self.vehicles = []
         self.roads = Layout.loads_roads(self)
         self.spawnpoints = Layout.load_spawnpoints(self)
+        self.bridge = Bridge(self, Box((2522, 276), (2700, 1167)), [ self.roads[38], self.roads[39] ], self.state[39])
 
         pygame.display.set_caption("Glorious TrafficSim 3000XL Sponsored by Bad Dragon")
 
@@ -61,12 +62,15 @@ class Game:
         for events in pygame.event.get(): pass  # Event fetching is required to prevent screen freeze.
         self.listen_input()
 
+        # perform sim logic
         for s in self.spawnpoints: s.tick()
         for v in self.vehicles: v.tick()
         for r in self.roads.values(): r.tick()
+        self.bridge.tick()
 
-        # set map
+        # render map
         self.screen.blit(self.bg, self.translation)
+        self.bridge.render()
         for r in self.roads.values(): r.render()
         for v in self.vehicles: v.render()
         for k, t in self.state.items(): t.render()

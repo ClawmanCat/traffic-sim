@@ -34,13 +34,15 @@ class Connection:
             message['msg_type'] = 'initialization'
 
             for key, light in state.items():
+                if not light.sync: continue
+
                 data = {"id": key, "crosses": light.crossing, "clearing_time": light.clearing_time}
                 message['data'].append(data)
 
             self.initialized = True
         else:
             for key, light in state.items():
-                if not light.dirty: continue
+                if not light.dirty or not light.sync: continue
                 light.dirty = False
 
                 data = {
