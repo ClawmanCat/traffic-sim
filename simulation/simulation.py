@@ -1,6 +1,8 @@
+import sys
 import time
 import traceback
 
+import pygame
 import websockets
 import asyncio
 import socket
@@ -9,7 +11,7 @@ from connection import Connection
 from game import Game
 
 
-require_connection = False
+require_connection = True
 use_debug_layout   = False
 
 
@@ -37,8 +39,15 @@ async def on_client_connected(ws, path):
     except Exception as e:
         print(f'Error occurred in connection with {ws.remote_address[0]}: {e}')
         print(f'Stacktrace:')
+
+        # Python shows stacktrace before error message sometimes.
+        sys.stdout.flush()
+        sys.stderr.flush()
+
         traceback.print_exc()
 
+
+pygame.init()
 
 if require_connection:
     # Note: connect with local ip, (e.g. 192.168.*.*:6969) or normal IP if portforwarding is enabled.

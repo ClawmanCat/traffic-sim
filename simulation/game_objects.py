@@ -66,7 +66,8 @@ class SpawnPoint:
 
 
 class Road:
-    def __init__(self, game, start, end, connections, light = None):
+    def __init__(self, id, game, start, end, connections, light = None):
+        self.id            = id
         self.game          = game
         self.start         = start
         self.end           = end
@@ -93,7 +94,7 @@ class Road:
 
 
     def add_sensor(self, area, type, target = None):
-        self.sensors.append(Sensor(self, area, type, target_light = target if target is not None else self.light))
+        self.sensors.append(Sensor(self, area, type, target_light = target))
 
 
     def add(self, vehicle):
@@ -201,9 +202,10 @@ class Sensor:
 
     def __init__(self, road, area, type, target_light = None):
         self.road   = road
+        self.game   = self.road.game
         self.area   = area
         self.type   = type
-        self.target = target_light if target_light is not None else self.road.light
+        self.target = self.game.state[target_light] if target_light is not None else self.road.light
         self.pressed = False
         self.changed = False
 
