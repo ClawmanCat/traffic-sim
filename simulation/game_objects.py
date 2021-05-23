@@ -94,7 +94,7 @@ class Road:
 
 
     def add_sensor(self, area, type, target = None):
-        self.sensors.append(Sensor(self, area, type, target_light = target))
+        self.sensors.append(Sensor(self, area, type, target_lights = target))
 
 
     def add(self, vehicle):
@@ -177,19 +177,7 @@ class Road:
             v.accelerate()
 
 
-        # There is no point in checking the sensors if they don't control any light.
-        if self.light is not None:
-            updates = dict()
-
-            for sensor in self.sensors:
-                sensor.tick()
-
-                if sensor.was_changed():
-                    if sensor.target not in updates: updates[sensor.target] = []
-                    updates[sensor.target].append([sensor.type.name, sensor.is_pressed()])
-
-            for key, value in updates.items():
-                for sensor_type, pressed in value: setattr(key, sensor_type, pressed)
+        for sensor in self.sensors: sensor.tick()
 
 
 class Sensor:
@@ -200,12 +188,12 @@ class Sensor:
         BLOCKING         = "vehicles_blocking"
 
 
-    def __init__(self, road, area, type, target_light = None):
-        self.road   = road
-        self.game   = self.road.game
-        self.area   = area
-        self.type   = type
-        self.target = self.game.state[target_light] if target_light is not None else self.road.light
+    def __init__(self, road, area, type, target_lights = None):
+        self.road    = road
+        self.game    = self.road.game
+        self.area    = area
+        self.type    = type
+        self.targets = [self.game.state[light] for light in target_lights] if target_lights is not None else [self.road.light]
         self.pressed = False
         self.changed = False
 
@@ -232,8 +220,9 @@ class Sensor:
         self.changed = (self.pressed != previously_pressed)
 
         if self.changed:
-            self.road.light.dirty = True
-            setattr(self.road.light, self.type.value, self.pressed)
+            for light in self.targets:
+                light.dirty = True
+                setattr(light, self.type.value, self.pressed)
 
 
     def render(self):
@@ -253,6 +242,18 @@ class Sensor:
             inactive_color,
             pygame.Rect(tl, wh)
         )
+
+
+        # Show targets if F is pressed
+        if pygame.key.get_pressed()[pygame.K_f]:
+            for target in self.targets:
+                pygame.draw.line(
+                    self.road.game.screen,
+                    (127, 127, 127, 127),
+                    add(add(self.area.min, div(sub(self.area.max, self.area.min), vec(2))), self.game.translation),
+                    add(target.position, self.game.translation)
+                )
+
 
     def is_pressed(self):
         return self.pressed

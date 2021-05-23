@@ -99,6 +99,10 @@ def is_in_box(position, box):
     return True
 
 
+def dist(a, b):
+    return mag(sub(b, a))
+
+
 # Given two objects, at p1 and p2 respectively, travelling at v1 and v2 respectively,
 # calculate if object 1 should start decelerating to avoid a collision, assuming it decelerates at decel.
 def should_brake(p1, v1, p2, v2, safety_distance = 20.0, dt = 2.5):

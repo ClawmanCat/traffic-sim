@@ -157,6 +157,7 @@ class Game:
         self.listen_input()
 
         # perform sim logic
+        for l in self.state.values(): l.tick()
         for s in self.spawnpoints: s.tick()
         for v in self.vehicles: v.tick()
         for r in self.roads.values(): r.tick()

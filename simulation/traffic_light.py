@@ -19,11 +19,27 @@ class TrafficLight:
         self.vehicles_coming = False
         self.emergency_vehicle = False
         self.state = state
+        self.true_state = None
         self.position = position
         self.game = game
         self.image = TrafficLight.red_light
         self.dirty = False
         self.sync = sync
+
+    def tick(self):
+        # Make green if clicked.
+        if (
+            pygame.mouse.get_pressed()[0] and
+            dist(add(self.position, self.game.translation), pygame.mouse.get_pos()) < self.image.get_width()
+        ):
+            if self.true_state is None:
+                self.true_state = self.state
+                self.state = "green"
+        else:
+            if self.true_state is not None:
+                self.state = self.true_state
+                self.true_state = None
+
 
     def render(self):
         if self.state == "red": self.image = TrafficLight.red_light

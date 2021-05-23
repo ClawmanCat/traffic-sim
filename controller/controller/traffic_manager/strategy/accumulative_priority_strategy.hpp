@@ -38,18 +38,18 @@ namespace ts {
                 float& urgency = route_urgency[route.id];
                 
                 if (route.emergency) {
-                    urgency = 1e6f;
+                    urgency += 1e6f;
                 } else if (route.blocked) {
                     urgency = -1e6f;
                 } else if (route.bus) {
-                    urgency = 1e3f;
+                    urgency += 100.0f;
                 } else if (route.waiting) {
                     if (route.state != route_state::light_state::GREEN) {
-                        urgency = std::max(urgency + 1.0f, 1e3f - 1.0f);
+                        urgency += 1.0f;
                     }
                 } else if (route.coming) {
                     if (route.state == route_state::light_state::GREEN) {
-                        urgency = std::max(urgency + 1.0f, 1e3f - 1.0f);
+                        urgency += 5.0f;
                     }
                 } else {
                     urgency = 0.0f;
@@ -85,6 +85,8 @@ namespace ts {
             
             // Starting from the route with the highest priority, keep setting routes to green if they don't have
             // a currently green route crossing them.
+            // Don't set routes to green if they would block a road with higher priority, as this could cause that road
+            // to remain perpetually red, due to timing differences.
             std::unordered_set<route_id> blocked;
             std::vector<route_id> ordered = order_routes();
             
@@ -98,6 +100,17 @@ namespace ts {
                 const route_state& route = state->at(route_id);
                 
                 if (!blocked.contains(route_id) && route.state == route_state::light_state::RED_SAFE) {
+                    bool skip = false;
+                    for (auto crossing : route.crosses) {
+                        if (route_urgency[crossing] > route_urgency[route.id]) {
+                            skip = true;
+                            break;
+                        }
+                    }
+                    
+                    if (skip) continue;
+                    
+                    
                     auto& r = push_route(route);
                     ++r.state;
                     
