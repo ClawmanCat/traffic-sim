@@ -42,6 +42,17 @@ class TrafficLight:
 
 
     def render(self):
+        # Show connections if E is pressed.
+        if pygame.key.get_pressed()[pygame.K_e]:
+            for crossed in self.crossing:
+                pygame.draw.line(
+                    self.game.screen,
+                    (255, 0, 0, 127),
+                    add(self.position, self.game.translation),
+                    add(self.game.state[crossed].position, self.game.translation)
+                )
+
+
         if self.state == "red": self.image = TrafficLight.red_light
         if self.state == "orange": self.image = TrafficLight.orange_light
         if self.state == "green": self.image = TrafficLight.green_light

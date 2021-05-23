@@ -276,38 +276,61 @@ class Bridge:
         self.roads             = roads
         self.light             = light
         self.state             = Bridge.State.CLOSED
-        self.open_time         = 100
+        self.last_state        = self.state
+        self.last_light_state  = self.light.state
         self.open_percentage   = 0
         self.state_duration    = 0
 
         assert all(road.light is not None and not road.light.sync for road in self.roads)
 
+        # Time to open / close bridge (ticks)
+        self.open_time = 100
+        # Time for a boat to pass under the bridge (ticks)
+        self.boat_clearing_time = self.roads[0].light.clearing_time * self.game.tick_rate
+        # Time for which a light on one side of the bridge remains green (ticks)
+        self.light_green_time = 5.0 * self.game.tick_rate
+        # One clearing time is required for each side of the bridge (open / close + green + wait)
+        self.clearing_time = self.open_time + self.boat_clearing_time + self.light_green_time
 
-        self.boat_clearing_time  = self.roads[0].light.clearing_time
-        self.clearing_time       = 2 * self.boat_clearing_time + self.open_time
-        self.light.clearing_time = self.clearing_time
+        self.light.clearing_time = self.clearing_time / self.game.tick_rate
 
 
     def tick(self):
+        self.last_state = self.state
+
         # There are three lights: one is synced with the controller, and controls whether the bridge is open or closed,
         # the other two are not synced, and use the first light to control which side of the bridge will have a green light.
         # TODO: Implement this in a less stupid way.
-        if self.light.state == "red":
-            self.progress_close()
-        else:
+        if self.light.state == "green":
             self.progress_open()
 
+            if self.state == Bridge.State.OPEN:
+                if self.state_duration < self.light_green_time:
+                    self.roads[0].light.state = "green"
+                else:
+                    self.roads[0].light.state = "red"
+        elif self.light.state == "orange":
+            if self.light.state != self.last_light_state: self.state_duration = 0
 
-        if self.state == Bridge.State.OPEN:
-            if self.light.state == "green":
-                self.roads[0].light.state = "green"
-                self.roads[1].light.state = "red"
-            else:
+            if self.state_duration < self.light_green_time:
                 self.roads[1].light.state = "green"
-                self.roads[0].light.state = "red"
+            else:
+                self.roads[1].light.state = "red"
+
+            if self.state_duration > self.light_green_time + self.boat_clearing_time:
+                self.progress_close()
         else:
             self.roads[0].light.state = "red"
             self.roads[1].light.state = "red"
+
+
+        if self.last_state != self.state:
+            if self.state == Bridge.State.OPEN or self.state == Bridge.State.CLOSED:
+                self.state_duration = 0
+        else:
+            self.state_duration += 1
+
+        self.last_light_state = self.light.state
 
 
     def progress_open(self):
