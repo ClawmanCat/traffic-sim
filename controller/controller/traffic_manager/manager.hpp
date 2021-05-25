@@ -3,8 +3,8 @@
 #include <controller/common.hpp>
 #include <controller/console_io.hpp>
 #include <controller/traffic_manager/strategy/strategy.hpp>
-#include <controller/traffic_manager/strategy/round_robin.hpp>
 #include <controller/traffic_manager/strategy/test_strategy.hpp>
+#include <controller/traffic_manager/strategy/accumulative_priority_strategy.hpp>
 #include <controller/communication/state.hpp>
 #include <controller/communication/connection.hpp>
 
@@ -30,7 +30,13 @@ namespace ts {
                     auto changes = strategy->update();
                     if (!changes.empty()) console_io::out("Changed ", changes.size(), " lights.");
     
-                    for (auto&& change : changes) simulation_state::instance().update(std::move(change));
+                    for (auto&& change : changes) {
+                        auto old_state = simulation_state::instance().view()->find(change.id)->second.state;
+                        auto new_state = change.state;
+                        
+                        console_io::out("Light ", change.id, ": ", light_state_to_string(old_state), " => ", light_state_to_string(new_state));
+                        simulation_state::instance().update(std::move(change));
+                    }
                 }
     
                 connection::instance().transmit_changes();
@@ -43,8 +49,8 @@ namespace ts {
         
         traffic_manager(void) {
             std::vector<std::pair<std::string, producer_t>> strategies {
-                { "Round Robin", []() { return (strategy_t) std::make_unique<strategy_round_robin>(); } },
-                { "Testing",     []() { return (strategy_t) std::make_unique<strategy_test>(); } }
+                { "Testing",         []() { return (strategy_t) std::make_unique<strategy_test>(); } },
+                { "Accum. Priority", []() { return (strategy_t) std::make_unique<strategy_accumulative_priority>(); } }
             };
             
             
