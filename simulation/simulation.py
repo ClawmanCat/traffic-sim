@@ -1,6 +1,7 @@
 import sys
 import time
 import traceback
+from enum import Enum
 
 import pygame
 import websockets
@@ -11,8 +12,10 @@ from connection import Connection
 from game import Game
 
 
-require_connection = True
-use_debug_layout   = False
+require_connection   = True
+use_debug_layout     = False
+# Will use local IP instead of localhost if set to true. Should be false if using NGROK or similar.
+require_port_forward = False
 
 
 async def on_client_connected(ws, path):
@@ -36,6 +39,7 @@ async def on_client_connected(ws, path):
             for task in done:
                 e = task.exception()
                 if e is not None: raise e
+                
     except Exception as e:
         print(f'Error occurred in connection with {ws.remote_address[0]}: {e}')
         print(f'Stacktrace:')
@@ -50,10 +54,8 @@ async def on_client_connected(ws, path):
 pygame.init()
 
 if require_connection:
-    # Note: connect with local ip, (e.g. 192.168.*.*:6969) or normal IP if portforwarding is enabled.
-    # localhost and loopback address are unlikely to work.
-    local_ip = socket.gethostbyname(socket.gethostname())
-    server_fn = websockets.serve(on_client_connected, local_ip, 6969)
+    local_ip  = socket.gethostbyname(socket.gethostname())
+    server_fn = websockets.serve(on_client_connected, local_ip if require_port_forward else 'localhost', 6969)
 
     print('Waiting for connection at port 6969.')
     asyncio.get_event_loop().run_until_complete(server_fn)
