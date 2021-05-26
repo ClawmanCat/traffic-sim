@@ -54,7 +54,7 @@ namespace ts {
                     result.push_back(route_state {
                         .id              = j["id"],
                         .crosses         = old.crosses,
-                        .clearing_time   = old.clearing_time,
+                        .clearing_time   = value_or(j, "clearing_time",     old.clearing_time),
                         .waiting         = value_or(j, "vehicles_waiting",  old.waiting),
                         .coming          = value_or(j, "vehicles_coming",   old.coming),
                         .emergency       = value_or(j, "emergency_vehicle", old.emergency),
