@@ -94,6 +94,7 @@ namespace ts {
                     std::swap(route.clearing_time, old.clearing_time);
                     std::swap(route.coming,        old.coming);
                     std::swap(route.waiting,       old.waiting);
+                    std::swap(route.bus,           old.bus);
                     std::swap(route.emergency,     old.emergency);
                     
                     ++updated;

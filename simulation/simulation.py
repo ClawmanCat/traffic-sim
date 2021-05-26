@@ -12,7 +12,7 @@ from connection import Connection
 from game import Game
 
 
-require_connection   = True
+require_connection   = False
 use_debug_layout     = False
 # Will use local IP instead of localhost if set to true. Should be false if using NGROK or similar.
 require_port_forward = False

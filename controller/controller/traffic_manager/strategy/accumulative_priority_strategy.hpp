@@ -10,6 +10,8 @@
 namespace ts {
     class strategy_accumulative_priority : public traffic_strategy {
     public:
+        constexpr static inline seconds orange_time = 3s;
+        
         strategy_accumulative_priority(void) {
             route_urgency = *simulation_state::instance().view()
                 | views::keys
@@ -42,7 +44,7 @@ namespace ts {
                 } else if (route.blocked) {
                     urgency = -1e6f;
                 } else if (route.bus) {
-                    urgency += 100.0f;
+                    urgency += 1e3f;
                 } else if (route.waiting) {
                     if (route.state != route_state::light_state::GREEN) {
                         urgency += 1.0f;
@@ -58,10 +60,10 @@ namespace ts {
             
             
             for (const auto& route : *state | views::values) {
-                // Set green routes to orange if 2 * clearing time has elapsed.
+                // Set green routes to orange if clearing time has elapsed.
                 if (
                     route.state == route_state::light_state::GREEN &&
-                    time_since(last_change[route.id]) > 2 * route.clearing_time &&
+                    time_since(last_change[route.id]) > route.clearing_time &&
                     !route.coming
                 ) {
                     auto& r = push_route(route);
@@ -72,8 +74,14 @@ namespace ts {
                 
                 // Advance orange & blocking red routes if the clearing time has elapsed.
                 if (
-                    (route.state == route_state::light_state::ORANGE || route.state == route_state::light_state::RED_BLOCKING) &&
-                    time_since(last_change[route.id]) > route.clearing_time
+                    (
+                        route.state == route_state::light_state::RED_BLOCKING &&
+                        time_since(last_change[route.id]) > route.clearing_time
+                    ) ||
+                    (
+                        route.state == route_state::light_state::ORANGE &&
+                        time_since(last_change[route.id]) > orange_time
+                    )
                 ) {
                     auto& r = push_route(route);
                     ++r.state;
